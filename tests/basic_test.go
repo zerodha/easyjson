@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/mailru/easyjson"
-	"github.com/mailru/easyjson/jwriter"
+	"github.com/zerodha/easyjson"
+	"github.com/zerodha/easyjson/jwriter"
 )
 
 type testType interface {
@@ -25,6 +25,7 @@ var testCases = []struct {
 	{&structsValue, structsString},
 	{&omitEmptyValue, omitEmptyString},
 	{&snakeStructValue, snakeStructString},
+	{&floatFmtStruct, floatFmtString},
 	{&omitEmptyDefaultValue, omitEmptyDefaultString},
 	{&optsValue, optsString},
 	{&rawValue, rawString},
@@ -244,7 +245,7 @@ func TestNestedMarshaler(t *testing.T) {
 		t.Errorf("Can't marshal NestedMarshaler: %s", err)
 	}
 
-	s2 := NestedMarshaler {
+	s2 := NestedMarshaler{
 		Value: &StructWithMarshaler{},
 	}
 

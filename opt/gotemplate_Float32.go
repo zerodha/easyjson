@@ -5,8 +5,8 @@ package opt
 import (
 	"fmt"
 
-	"github.com/mailru/easyjson/jlexer"
-	"github.com/mailru/easyjson/jwriter"
+	"github.com/zerodha/easyjson/jlexer"
+	"github.com/zerodha/easyjson/jwriter"
 )
 
 // template type Optional(A)

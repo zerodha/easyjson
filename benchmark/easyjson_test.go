@@ -1,3 +1,4 @@
+//go:build use_easyjson
 // +build use_easyjson
 
 package benchmark
@@ -5,8 +6,8 @@ package benchmark
 import (
 	"testing"
 
-	"github.com/mailru/easyjson"
-	"github.com/mailru/easyjson/jwriter"
+	"github.com/zerodha/easyjson"
+	"github.com/zerodha/easyjson/jwriter"
 )
 
 func BenchmarkEJ_Unmarshal_M(b *testing.B) {

@@ -13,9 +13,9 @@ import (
 	"unicode"
 )
 
-const pkgWriter = "github.com/mailru/easyjson/jwriter"
-const pkgLexer = "github.com/mailru/easyjson/jlexer"
-const pkgEasyJSON = "github.com/mailru/easyjson"
+const pkgWriter = "github.com/zerodha/easyjson/jwriter"
+const pkgLexer = "github.com/zerodha/easyjson/jlexer"
+const pkgEasyJSON = "github.com/zerodha/easyjson"
 
 // FieldNamer defines a policy for generating names for struct fields.
 type FieldNamer interface {
@@ -39,6 +39,7 @@ type Generator struct {
 	fieldNamer               FieldNamer
 	simpleBytes              bool
 	skipMemberNameUnescaping bool
+	floatFmt                 string
 
 	// package path to local alias map for tracking imports
 	imports map[string]string
@@ -131,6 +132,11 @@ func (g *Generator) OmitEmpty() {
 // SimpleBytes triggers generate output bytes as slice byte
 func (g *Generator) SimpleBytes() {
 	g.simpleBytes = true
+}
+
+// SetFloatFmt sets the format for formatting float numbers using strconv.
+func (g *Generator) SetFloatFmt(fmt string) {
+	g.floatFmt = fmt
 }
 
 // addTypes requests to generate encoding/decoding funcs for the given type.

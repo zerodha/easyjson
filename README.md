@@ -1,4 +1,4 @@
-# easyjson [![Build Status](https://github.com/mailru/easyjson/actions/workflows/easyjson.yml/badge.svg)](https://github.com/mailru/easyjson/actions/workflows/easyjson.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/mailru/easyjson)](https://goreportcard.com/report/github.com/mailru/easyjson)
+# easyjson [![Build Status](https://github.com/zerodha/easyjson/actions/workflows/easyjson.yml/badge.svg)](https://github.com/zerodha/easyjson/actions/workflows/easyjson.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/zerodha/easyjson)](https://goreportcard.com/report/github.com/zerodha/easyjson)
 
 Package easyjson provides a fast and easy way to marshal/unmarshal Go structs
 to/from JSON without the use of reflection. In performance tests, easyjson
@@ -15,12 +15,12 @@ enabling `omitempty` behavior by default.
 ### Install: 
 ```sh
 # for Go < 1.17
-go get -u github.com/mailru/easyjson/...
+go get -u github.com/zerodha/easyjson/...
 ```
 #### or
 ```sh
 # for Go >= 1.17
-go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@latest
+go get github.com/zerodha/easyjson && go install github.com/zerodha/easyjson/...@latest
 ```
 ### Run:
 ```sh
@@ -47,41 +47,43 @@ someStruct := &SomeStruct{}
 err := easyjson.Unmarshal(rawBytes, someStruct)
 ```
 
-Please see the [GoDoc](https://godoc.org/github.com/mailru/easyjson)
+Please see the [GoDoc](https://godoc.org/github.com/zerodha/easyjson)
 for more information and features.
 ## Options
 ```txt
 Usage of easyjson:
   -all
-    	generate marshaler/unmarshalers for all structs in a file
+        generate marshaler/unmarshalers for all structs in a file
   -build_tags string
         build tags to add to generated file
-  -gen_build_flags string
-        build flags when running the generator while bootstrapping
   -byte
         use simple bytes instead of Base64Bytes for slice of bytes
-  -leave_temps
-    	do not delete temporary files
-  -no_std_marshalers
-    	don't generate MarshalJSON/UnmarshalJSON funcs
-  -noformat
-    	do not run 'gofmt -w' on output file
-  -omit_empty
-    	omit empty fields by default
-  -output_filename string
-    	specify the filename of the output
-  -pkg
-    	process the whole package instead of just the given file
-  -snake_case
-    	use snake_case names instead of CamelCase by default
-  -lower_camel_case
-        use lowerCamelCase instead of CamelCase by default
-  -stubs
-    	only generate stubs for marshaler/unmarshaler funcs
-  -disallow_unknown_fields
-        return error if some unknown field in json appeared
   -disable_members_unescape
-        disable unescaping of \uXXXX string sequences in member names
+        don't perform unescaping of member names to improve performance
+  -disallow_unknown_fields
+        return error if any unknown field in json appeared
+  -float_format string
+        float format to be used in json writer
+  -gen_build_flags string
+        build flags when running the generator while bootstrapping
+  -leave_temps
+        do not delete temporary files
+  -lower_camel_case
+        use lowerCamelCase names instead of CamelCase by default
+  -no_std_marshalers
+        don't generate MarshalJSON/UnmarshalJSON funcs
+  -noformat
+        do not run 'gofmt -w' on output file
+  -omit_empty
+        omit empty fields by default
+  -output_filename string
+        specify the filename of the output
+  -pkg
+        process the whole package instead of just the given file
+  -snake_case
+        use snake_case names instead of CamelCase by default
+  -stubs
+        only generate stubs for marshaler/unmarshaler funcs
 ```
 
 Using `-all` will generate marshalers/unmarshalers for all Go structs in the
@@ -147,7 +149,7 @@ Additionally, easyjson exposes utility funcs that use the `MarshalEasyJSON` and
 `UnmarshalEasyJSON` for marshaling/unmarshaling to and from standard readers
 and writers. For example, easyjson provides `easyjson.MarshalToHTTPResponseWriter`
 which marshals to the standard `http.ResponseWriter`. Please see the [GoDoc
-listing](https://godoc.org/github.com/mailru/easyjson) for the full listing of
+listing](https://godoc.org/github.com/zerodha/easyjson) for the full listing of
 utility funcs that are available.
 
 ## Controlling easyjson Marshaling and Unmarshaling Behavior
@@ -181,7 +183,7 @@ allocation and to allow larger reusable buffers.
 easyjson's custom allocation buffer pool is defined in the `easyjson/buffer`
 package, and the default behavior pool behavior can be modified (if necessary)
 through a call to `buffer.Init()` prior to any marshaling or unmarshaling.
-Please see the [GoDoc listing](https://godoc.org/github.com/mailru/easyjson/buffer)
+Please see the [GoDoc listing](https://godoc.org/github.com/zerodha/easyjson/buffer)
 for more information.
 
 ## String interning
