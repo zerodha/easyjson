@@ -56,6 +56,8 @@ type fieldTags struct {
 	omit        bool
 	omitEmpty   bool
 	noOmitEmpty bool
+	omitZero    bool
+	noOmitZero  bool
 	asString    bool
 	required    bool
 	intern      bool
@@ -76,6 +78,10 @@ func parseFieldTags(f reflect.StructField) fieldTags {
 			ret.omitEmpty = true
 		case s == "!omitempty":
 			ret.noOmitEmpty = true
+		case s == "omitzero":
+			ret.omitZero = true
+		case s == "!omitzero":
+			ret.noOmitZero = true
 		case s == "string":
 			ret.asString = true
 		case s == "required":
@@ -314,12 +320,85 @@ func (g *Generator) notEmptyCheck(t reflect.Type, v string) string {
 		return v + ` != ""`
 	case reflect.Float32, reflect.Float64,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr:
 
 		return v + " != 0"
 
 	default:
 		// note: Array types don't have a useful empty value
+		return "true"
+	}
+}
+
+func (g *Generator) notZeroCheck(t reflect.Type, v string) string {
+	optionalIface := reflect.TypeOf((*easyjson.IsZero)(nil)).Elem()
+	if reflect.PtrTo(t).Implements(optionalIface) {
+		return "!(" + v + ").IsZero()"
+	}
+
+	switch t.Kind() {
+	case reflect.Slice, reflect.Map, reflect.Interface, reflect.Ptr:
+		return v + " != nil"
+	case reflect.Bool:
+		return v
+	case reflect.String:
+		return v + ` != ""`
+	case reflect.Float32, reflect.Float64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr:
+
+		return v + " != 0"
+	case reflect.Array:
+		// NOTE: stdlib encoding/json does not check if array elements implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+	case reflect.Struct:
+		// NOTE: stdlib encoding/json does not check if struct fields implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+
+	default:
+		return "true"
+	}
+}
+
+func (g *Generator) notEmptyOrZeroCheck(t reflect.Type, v string) string {
+	isDefinedIface := reflect.TypeOf((*easyjson.Optional)(nil)).Elem()
+	implementsIsDefined := reflect.PtrTo(t).Implements(isDefinedIface)
+	isZeroIface := reflect.TypeOf((*easyjson.IsZero)(nil)).Elem()
+	implementsIsZero := reflect.PtrTo(t).Implements(isZeroIface)
+
+	if implementsIsDefined && implementsIsZero {
+		return "(" + v + ").IsDefined() || !(" + v + ").IsZero()"
+	} else if implementsIsDefined {
+		return "(" + v + ").IsDefined()"
+	} else if implementsIsZero {
+		return "!(" + v + ").IsZero()"
+	}
+
+	switch t.Kind() {
+	case reflect.Slice, reflect.Map:
+		return v + " != nil && len(" + v + ") != 0"
+	case reflect.Interface, reflect.Ptr:
+		return v + " != nil"
+	case reflect.Bool:
+		return v
+	case reflect.String:
+		return v + ` != ""`
+	case reflect.Float32, reflect.Float64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr:
+
+		return v + " != 0"
+	case reflect.Array:
+		// NOTE: stdlib encoding/json does not check if array elements implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+	case reflect.Struct:
+		// NOTE: stdlib encoding/json does not check if struct fields implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+
+	default:
 		return "true"
 	}
 }
@@ -335,18 +414,25 @@ func (g *Generator) genStructFieldEncoder(t reflect.Type, f reflect.StructField,
 	toggleFirstCondition := firstCondition
 
 	noOmitEmpty := (!tags.omitEmpty && !g.omitEmpty) || tags.noOmitEmpty
-	if noOmitEmpty {
+	noOmitZero := (!tags.omitZero && !g.omitZero) || tags.noOmitZero
+	if noOmitEmpty && noOmitZero {
 		fmt.Fprintln(g.out, "  {")
 		toggleFirstCondition = false
-	} else {
+	} else if noOmitZero {
 		fmt.Fprintln(g.out, "  if", g.notEmptyCheck(f.Type, "in."+f.Name), "{")
+		// can be any in runtime, so toggleFirstCondition stay as is
+	} else if noOmitEmpty {
+		fmt.Fprintln(g.out, "  if", g.notZeroCheck(f.Type, "in."+f.Name), "{")
+		// can be any in runtime, so toggleFirstCondition stay as is
+	} else {
+		fmt.Fprintln(g.out, "  if", g.notEmptyOrZeroCheck(f.Type, "in."+f.Name), "{")
 		// can be any in runtime, so toggleFirstCondition stay as is
 	}
 
 	if firstCondition {
 		fmt.Fprintf(g.out, "    const prefix string = %q\n", ","+strconv.Quote(jsonName)+":")
 		if first {
-			if !noOmitEmpty {
+			if !noOmitEmpty || !noOmitZero {
 				fmt.Fprintln(g.out, "      first = false")
 			}
 			fmt.Fprintln(g.out, "      out.RawString(prefix[1:])")

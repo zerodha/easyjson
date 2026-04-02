@@ -30,6 +30,7 @@ type Generator struct {
 	SnakeCase                bool
 	LowerCamelCase           bool
 	OmitEmpty                bool
+	OmitZero                 bool
 	DisallowUnknownFields    bool
 	SkipMemberNameUnescaping bool
 
@@ -129,6 +130,9 @@ func (g *Generator) writeMain() (path string, err error) {
 	if g.OmitEmpty {
 		fmt.Fprintln(f, "  g.OmitEmpty()")
 	}
+	if g.OmitZero {
+		fmt.Fprintln(f, "  g.OmitZero()")
+	}
 	if g.NoStdMarshalers {
 		fmt.Fprintln(f, "  g.NoStdMarshalers()")
 	}
@@ -191,7 +195,10 @@ func (g *Generator) Run() error {
 		buildFlags := buildFlagsRegexp.FindAllString(g.GenBuildFlags, -1)
 		execArgs = append(execArgs, buildFlags...)
 	}
-	execArgs = append(execArgs, "-tags", g.BuildTags, filepath.Base(path))
+	if len(g.BuildTags) > 0 {
+		execArgs = append(execArgs, "-tags", g.BuildTags)
+	}
+	execArgs = append(execArgs, filepath.Base(path))
 	cmd := exec.Command("go", execArgs...)
 
 	cmd.Stdout = f

@@ -358,6 +358,80 @@ var omitEmptyString = "{" +
 	`"SubPNE":{"Value":"3","Value2":"4"}` +
 	"}"
 
+type OmitZero struct {
+	// NOTE: first field is empty to test comma printing.
+
+	StrZ, StrNZ       string  `json:",omitzero"`
+	ZPtr, PtrZ, PtrNZ *string `json:",omitzero"`
+
+	IntNZ int `json:"intField,omitzero"`
+	IntZ  int `json:",omitzero"`
+
+	// NOTE: omitzero DOES have effect on non-pointer struct fields.
+	SubZ, SubNZ          SubStruct  `json:",omitzero"`
+	SubZP, SubPZ, SubPNZ *SubStruct `json:",omitzero"`
+
+	// test IsZero()bool is respected
+	Time time.Time `json:",omitzero"`
+}
+
+var omitZeroValue = OmitZero{
+	StrNZ:  "str",
+	PtrZ:   new(string),
+	PtrNZ:  &str,
+	IntNZ:  6,
+	SubNZ:  SubStruct{Value: "1", Value2: "2"},
+	SubPZ:  &SubStruct{},
+	SubPNZ: &SubStruct{Value: "3", Value2: "4"},
+}
+
+var omitZeroString = "{" +
+	`"StrNZ":"str",` +
+	`"PtrZ":"",` +
+	`"PtrNZ":"bla",` +
+	`"intField":6,` +
+	`"SubNZ":{"Value":"1","Value2":"2"},` +
+	`"SubPZ":{"Value":"","Value2":""},` +
+	`"SubPNZ":{"Value":"3","Value2":"4"}` +
+	"}"
+
+type OmitEmptyAndZero struct {
+	// NOTE: first field is empty to test comma printing.
+
+	StrZ, StrNZ       string  `json:",omitempty,omitzero"`
+	ZPtr, PtrZ, PtrNZ *string `json:",omitempty,omitzero"`
+
+	IntNZ int `json:"intField,omitempty,omitzero"`
+	IntZ  int `json:",omitempty,omitzero"`
+
+	// NOTE: omitzero DOES have effect on non-pointer struct fields.
+	SubZ, SubNZ          SubStruct  `json:",omitempty,omitzero"`
+	SubZP, SubPZ, SubPNZ *SubStruct `json:",omitempty,omitzero"`
+
+	// test IsZero()bool is respected
+	Time time.Time `json:",omitempty,omitzero"`
+}
+
+var omitEmptyAndZeroValue = OmitZero{
+	StrNZ:  "str",
+	PtrZ:   new(string),
+	PtrNZ:  &str,
+	IntNZ:  6,
+	SubNZ:  SubStruct{Value: "1", Value2: "2"},
+	SubPZ:  &SubStruct{},
+	SubPNZ: &SubStruct{Value: "3", Value2: "4"},
+}
+
+var omitEmptyAndZeroString = "{" +
+	`"StrNZ":"str",` +
+	`"PtrZ":"",` +
+	`"PtrNZ":"bla",` +
+	`"intField":6,` +
+	`"SubNZ":{"Value":"1","Value2":"2"},` +
+	`"SubPZ":{"Value":"","Value2":""},` +
+	`"SubPNZ":{"Value":"3","Value2":"4"}` +
+	"}"
+
 type Opts struct {
 	StrNull      opt.String
 	StrEmpty     opt.String
@@ -545,21 +619,24 @@ type Maps struct {
 	InterfaceMap map[string]interface{}
 	NilMap       map[string]string
 
-	CustomMap map[Str]Str
+	CustomMap             map[Str]Str
+	CustomMapWithEmptyKey map[Str]Str
 }
 
 var mapsValue = Maps{
 	Map:          map[string]string{"A": "b"}, // only one item since map iteration is randomized
 	InterfaceMap: map[string]interface{}{"G": float64(1)},
 
-	CustomMap: map[Str]Str{"c": "d"},
+	CustomMap:             map[Str]Str{"c": "d"},
+	CustomMapWithEmptyKey: map[Str]Str{"": "d"},
 }
 
 var mapsString = `{` +
 	`"Map":{"A":"b"},` +
 	`"InterfaceMap":{"G":1},` +
 	`"NilMap":null,` +
-	`"CustomMap":{"c":"d"}` +
+	`"CustomMap":{"c":"d"},` +
+	`"CustomMapWithEmptyKey":{"":"d"}` +
 	`}`
 
 type NamedSlice []Str

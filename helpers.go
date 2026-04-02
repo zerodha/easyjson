@@ -17,7 +17,7 @@ type Marshaler interface {
 	MarshalEasyJSON(w *jwriter.Writer)
 }
 
-// Marshaler is an easyjson-compatible unmarshaler interface.
+// Unmarshaler is an easyjson-compatible unmarshaler interface.
 type Unmarshaler interface {
 	UnmarshalEasyJSON(w *jlexer.Lexer)
 }
@@ -31,6 +31,11 @@ type MarshalerUnmarshaler interface {
 // Optional defines an undefined-test method for a type to integrate with 'omitempty' logic.
 type Optional interface {
 	IsDefined() bool
+}
+
+// IsZero defines a zero-test method for a type to integrate with 'omitzero' logic.
+type IsZero interface {
+	IsZero() bool
 }
 
 // UnknownsUnmarshaler provides a method to unmarshal unknown struct fileds and save them as you want
